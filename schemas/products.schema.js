@@ -21,21 +21,21 @@ const booksSchema = new mongoose.Schema({
   password: {
     type: Number,
     required: true,
-    unique: true,
+    unique: false,
   },
   content: {
     type: String,
     required: true,
-    unique: true,
+    unique: false,
   },
   createdAt: {
     type: String,
-    required: true,
+    required: false,
   },
   status: {
     type: String,
-    required: true,
+    required: false,
   },
 });
 
-export default mongoose.model("Books", booksSchema);
+export default mongoose.model("books", booksSchema);

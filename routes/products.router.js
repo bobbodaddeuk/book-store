@@ -1,99 +1,87 @@
 import express from "express";
+import books from "../schemas/products.schema.js";
 
 const router = express.Router();
 
-// const db = client.db("bookStore");
-// const booksCollection = db.collection("books");
-// const books = await booksCollection.find({}).toArray();
-
 // 상품 작성 API
-router.post("/create", (req, res) => {
+router.post("/create", async (req, res) => {
   const { name, content, author, password } = req.body;
 
   if (!name || !content || !author || !password) {
     return res.status(400).json({ message: "전부 작성해주세요." });
   }
-
-  const newBook = {
-    booksId: books.length + 1,
+  let lastBook = await books.findOne().sort("-booksId").exec();
+  const newBook = new books({
+    booksId: lastBook.booksId + 1,
     name,
     content,
     author,
     status: "FOR_SALE",
     createdAt: new Date(),
     password,
-  };
+  });
 
-  books.push(newBook);
+  await newBook.save();
 
   return res.status(201).json({ book: newBook });
 });
 
 // 목록 조회 API
-router.get("/list", (req, res) => {
-  const sortedBooks = books.sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
+router.get("/list", async (req, res) => {
+  const sortedBooks = await books.find().sort("-booksId").exec();
   return res.status(200).json({ books: sortedBooks });
 });
 
 //상세 목록 조회 API
-router.get("/list/:booksId", (req, res) => {
+router.get("/list/:booksId", async (req, res) => {
   const booksId = req.params.booksId;
-  const book = books.find((p) => p.booksId === +booksId);
+  const book = await books.findOne({ booksId: +booksId }).exec();
 
   if (!book) {
     return res.status(404).json({ message: "상품 조회에 실패하였습니다." });
   }
 
-  return res.status(200).json({ book });
+  return res.status(200).json(book);
 });
 
 //상품 정보 수정 API
-router.put("/list/:booksId", (req, res) => {
+router.put("/list/:booksId", async (req, res) => {
   const booksId = req.params.booksId;
   const { name, content, status, password } = req.body;
 
-  const booksIndex = books.findIndex((p) => p.booksId === +booksId);
+  const book = await books.findOne({ booksId: +booksId }).exec();
 
-  if (booksIndex === -1) {
+  if (!book) {
     return res.status(404).json({ message: "상품 조회에 실패하였습니다." });
   }
 
-  const book = books[booksIndex];
-
-  if (password !== book.password) {
+  if (+password !== book.password) {
     return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
-  books[booksIndex] = {
-    ...book,
-    name: name || book.name,
-    content: content || book.content,
-    status: status || book.status,
-  };
+  book.name = name || book.name;
+  book.content = content || book.content;
+  book.status = status || book.status;
 
-  return res.status(200).json({ book: books[booksIndex] });
+  book.save();
+  return res.status(200).json(book);
 });
 
 // 상품 삭제 API
-router.delete("/list/:booksId", (req, res) => {
+router.delete("/list/:booksId", async (req, res) => {
   const booksId = req.params.booksId;
   const { password } = req.body;
 
-  const booksIndex = books.findIndex((p) => p.booksId === +booksId);
-
-  if (booksIndex === -1) {
+  const book = await books.findOne({ booksId: +booksId }).exec();
+  if (!book) {
     return res.status(404).json({ message: "상품 조회에 실패하였습니다." });
   }
 
-  const book = books[booksIndex];
-
-  if (password !== book.password) {
+  if (+password !== book.password) {
     return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
-  books.splice(booksIndex, 1);
+  await books.deleteOne({ booksId: +booksId }).exec();
 
   return res
     .status(200)
