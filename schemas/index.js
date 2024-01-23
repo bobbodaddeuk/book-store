@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
 const connect = () => {
   // mongoose.connect는 MongoDB 서버에 연결하는 메서드입니다.
   mongoose
     .connect(
       // 빨간색으로 표시된 부분은 대여한 ID, Password, 주소에 맞게끔 수정해주세요!
-      "mongodb+srv://bobbodaddeuk:2K57lRsuMSvanoD2@express-mongo.sbkssqq.mongodb.net/?retryWrites=true&w=majority",
+      "mongodb+srv://process.env.DB_USER:process.env.DB_PASSWORD@express-mongo.sbkssqq.mongodb.net/?retryWrites=true&w=majority",
       {
-        dbName: "book_store", // book_store 데이터베이스명을 사용합니다.
-      }
+        dbName: "process.env.DB_NAME", // book_store 데이터베이스명을 사용합니다.
+      },
     )
     .then(() => console.log("MongoDB 연결에 성공하였습니다."))
     .catch((err) => console.log(`MongoDB 연결에 실패하였습니다. ${err}`));

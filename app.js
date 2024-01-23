@@ -3,9 +3,11 @@
 import express from "express";
 import booksRouter from "./routes/products.router.js";
 import connect from "./schemas/index.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT;
 
 connect();
 
