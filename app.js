@@ -1,5 +1,3 @@
-// app.js
-
 import express from "express";
 import booksRouter from "./routes/products.router.js";
 import connect from "./schemas/index.js";
